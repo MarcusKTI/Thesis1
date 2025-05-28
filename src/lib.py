@@ -35,7 +35,9 @@ class App:
         return output
 
 FILEPATH = os.path.expanduser("~") + "/thesis1.pickle"
+
 app = App(FILEPATH)
+selectedEntries = {}
 
 def appRun():
     if not os.path.exists(FILEPATH):
@@ -123,12 +125,13 @@ def selectedFreezer(freezerId):
 
         elif userSelection == "2":
             os.system("clear")
-            displayFreezerContents(freezerId)
+            displayFreezerContents(freezerId, False)
+            print()
 
         elif userSelection == "3":
             os.system("clear")
-            displayFreezerContents(freezerId)
-            selectedEntry = selectEntryFromDisplayedContents(freezerId)
+            displayFreezerContents(freezerId, True)
+            selectedEntry = int(input("Select entry to edit: "))
             editEntryInFreezer(freezerId, selectedEntry)
 
         elif userSelection == "4":
@@ -155,21 +158,47 @@ def selectedFreezer(freezerId):
         else:
             unknownOption()
 
-def displayFreezerContents(freezerId):
+def displayFreezerContents(freezerId, hasPrefix):
+    i = 0
     for shelf in range(0, 5):
         for row in range(0, 4):
             for box in range(0, 9):
-                if app.freezers[freezerId].grid[shelf][row][box] == None:
+                if app.freezers[freezerId].grid[shelf][row][box] is None:
                     continue
-                app.freezers[freezerId].grid[shelf][row][box].printEntry()
-    print()
-
-
-def selectEntryFromDisplayedContents(freezerId):
-    pass
+                selectedEntries[i] = (shelf, row, box)
+                toBePrinted = ""
+                if hasPrefix:
+                    toBePrinted += f"[{i:03}] "
+                toBePrinted += app.freezers[freezerId].grid[shelf][row][box].printEntry()
+                print(toBePrinted)
+                i += 1
 
 def editEntryInFreezer(freezerId, selectedEntry):
-    pass
+    newName = input("Enter new name for entry: ")
+    newFreezerId = int(input("Enter new freezer id for entry: "))
+    if not newFreezerId in app.freezers.keys():
+        os.system("clear")
+        print("No such freezer. Try again.")
+        return
+
+    newExpDate = input("Enter a new expiration date for entry: ")
+    newLocation = input("Enter the new location of the entry in the freezer.\nThe position is given in the format 'shelf,rack,box' provided with numbers, starting at 0: ").strip()
+    newLocation = newLocation.split(",")
+    newLocation = (int(newLocation[0]), int(newLocation[1]), int(newLocation[2]))
+
+    if not app.freezers[newFreezerId].grid[newLocation[0]][newLocation[1]][newLocation[2]] == None:
+        os.system("clear")
+        print("Location is already occupied. Try again.")
+        return
+
+    app.freezers[newFreezerId].grid[newLocation[0]][newLocation[1]][newLocation[2]] = app.freezers[freezerId].grid[selectedEntries[selectedEntry][0]][selectedEntries[selectedEntry][1]][selectedEntries[selectedEntry][2]]
+    app.freezers[newFreezerId].grid[newLocation[0]][newLocation[1]][newLocation[2]].name = newName
+    app.freezers[newFreezerId].grid[newLocation[0]][newLocation[1]][newLocation[2]].freezerId = newFreezerId
+    app.freezers[newFreezerId].grid[newLocation[0]][newLocation[1]][newLocation[2]].expDate = newExpDate
+    app.freezers[newFreezerId].grid[newLocation[0]][newLocation[1]][newLocation[2]].location = newLocation
+
+    app.freezers[freezerId].grid[selectedEntries[selectedEntry][0]][selectedEntries[selectedEntry][1]][selectedEntries[selectedEntry][2]] = None
+    os.system("clear")
 
 def unknownOption():
     os.system("clear")

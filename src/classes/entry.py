@@ -10,5 +10,5 @@ class Entry:
         self.expDate = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         self.location = (0, 0, 0)
 
-    def printEntry(self):
-        print(f"Date: {self.date}, Name: {self.name}, ExpirationDate: {self.expDate}, Location: {self.location}")
+    def printEntry(self) -> str:
+        return f"Date: {self.date}, Name: {self.name}, ExpirationDate: {self.expDate}, Location: {self.location}"
